@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Column from './Column';
 import './Board.css';
 import CardModal from '../CardModal.jsx';
-import { updateCardAxios, deleteCardAxios } from '../../api';
+import { updateCardAxios, deleteCardAxios, createColumnAxios } from '../../api';
 
 
 const Board = () => {
@@ -51,12 +51,9 @@ const Board = () => {
             console.error("Attempted to save card, but no card is selected.");
             return;
         }
-
         try {
             const savedCard = await updateCardAxios(selectedCard.id, updatedCardData);
-
             console.log('Card saved successfully:', savedCard);
-
             setColumns(currentColumns => {
                 return currentColumns.map(column => {
                     if (column.id === savedCard.columnId) {
@@ -73,9 +70,7 @@ const Board = () => {
                     return column;
                 });
             });
-
             closeModal();
-
         } catch (error) {
             console.error('Error saving card:', error);
         }
@@ -86,12 +81,9 @@ const Board = () => {
              console.error("Attempted to delete card, but no card is selected.");
              return;
          }
-
          try {
              await deleteCardAxios(selectedCard.id);
-
              console.log('Card deleted successfully:', selectedCard.id);
-
              setColumns(currentColumns => {
                  return currentColumns.map(column => {
                      if (column.id === selectedCard.columnId) {
@@ -103,13 +95,31 @@ const Board = () => {
                      return column;
                  });
              });
-
              closeModal();
-
          } catch (error) {
              console.error('Error deleting card:', error);
          }
     };
+
+    const handleAddColumn = async () => {
+        const columnName = prompt("Enter the name for the new column:");
+
+        if (columnName && columnName.trim()) {
+            try {
+                const newColumn = await createColumnAxios(columnName.trim());
+
+                console.log('Column created successfully:', newColumn);
+
+                setColumns(currentColumns => [...currentColumns, newColumn]);
+
+            } catch (error) {
+                console.error('Error creating column:', error);
+            }
+        } else {
+            console.log('Column creation cancelled or name was empty.');
+        }
+    };
+
 
     if (isLoading) {
         return <div>Loading board...</div>;
@@ -131,6 +141,8 @@ const Board = () => {
                     />
                 ))}
             </div>
+
+            <button onClick={handleAddColumn} className="add-column-button">+ Add New Column</button>
 
             <CardModal
                 isOpen={isModalOpen}
