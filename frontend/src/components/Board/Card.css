@@ -1,0 +1,29 @@
+.card {
+    background-color: #fff; 
+    border-radius: 4px; 
+    padding: 8px; 
+    margin-bottom: 8px;
+    box-shadow: 0 1px 0 rgba(9, 30, 66, 0.25);
+    cursor: pointer; 
+    word-break: break-word; 
+    transition: background-color 0.2s ease; 
+}
+
+.card:hover {
+    background-color: #f0f0f0; 
+}
+
+.card h4 {
+    font-size: 0.9rem; 
+    margin: 0 0 5px 0; 
+    font-weight: normal;
+    line-height: 1.2; 
+}
+
+.card p {
+    font-size: 0.8rem; 
+    margin: 0; 
+    color: #5e6c84;
+    line-height: 1.4;
+    word-break: break-word;
+}

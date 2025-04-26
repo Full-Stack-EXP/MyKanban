@@ -1,0 +1,38 @@
+.board-container {
+    padding: 10px; 
+    background-color: #0079bf;
+    height: calc(100vh - 60px); 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+}
+
+.board-container h2 {
+    color: white; 
+    margin-top: 0;
+    margin-bottom: 10px;
+    padding-left: 8px; 
+}
+
+.columns-container {
+    display: flex; 
+    flex-grow: 1; 
+    overflow-x: auto; 
+
+    scrollbar-width: thin;
+    scrollbar-color: #026aa7 #0050a0; 
+}
+
+.columns-container::-webkit-scrollbar {
+    height: 12px; 
+}
+
+.columns-container::-webkit-scrollbar-thumb {
+    background-color: #026aa7;
+    border-radius: 6px; 
+    border: 3px solid #0079bf; 
+}
+
+.columns-container::-webkit-scrollbar-track {
+    background: #0050a0;
+}
