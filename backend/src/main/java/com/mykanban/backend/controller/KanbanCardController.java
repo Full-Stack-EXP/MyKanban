@@ -2,6 +2,7 @@ package com.mykanban.backend.controller;
 
 import com.mykanban.backend.model.KanbanCard;
 import com.mykanban.backend.service.KanbanCardService;
+import com.mykanban.backend.dto.CardResponseDTO; 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+// import java.util.List; 
+// import java.util.stream.Collectors; 
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +20,7 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/api/cards")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173") 
 public class KanbanCardController {
 
     private final KanbanCardService cardService;
@@ -28,14 +31,23 @@ public class KanbanCardController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<KanbanCard> getCardById(@PathVariable Long id) {
-        Optional<KanbanCard> card = cardService.getCardById(id);
-        return card.map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<CardResponseDTO> getCardById(@PathVariable Long id) {
+        Optional<KanbanCard> cardOptional = cardService.getCardById(id);
+        return cardOptional.map(card -> {
+            CardResponseDTO dto = new CardResponseDTO(
+                card.getId(),
+                card.getTitle(),
+                card.getDescription(),
+                card.getOrderIndex(),
+                card.getColumn().getId()
+            );
+            return ResponseEntity.ok(dto);
+        })
+        .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<KanbanCard> createCard(@RequestBody KanbanCardCreateRequest request) {
+    public ResponseEntity<CardResponseDTO> createCard(@RequestBody KanbanCardCreateRequest request) {
 
         KanbanCard newCard = new KanbanCard();
         newCard.setTitle(request.getTitle());
@@ -44,15 +56,32 @@ public class KanbanCardController {
 
         KanbanCard createdCard = cardService.createCard(newCard, request.getColumnId());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdCard);
+        CardResponseDTO dto = new CardResponseDTO(
+            createdCard.getId(),
+            createdCard.getTitle(),
+            createdCard.getDescription(),
+            createdCard.getOrderIndex(),
+            createdCard.getColumn().getId()
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<KanbanCard> updateCard(@PathVariable Long id, @RequestBody KanbanCard updatedCardData) {
-        Optional<KanbanCard> updatedCard = cardService.updateCard(id, updatedCardData);
+    public ResponseEntity<CardResponseDTO> updateCard(@PathVariable Long id, @RequestBody KanbanCard updatedCardData) {
+        Optional<KanbanCard> updatedCardOptional = cardService.updateCard(id, updatedCardData);
 
-        return updatedCard.map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+        return updatedCardOptional.map(card -> {
+            CardResponseDTO dto = new CardResponseDTO(
+                card.getId(),
+                card.getTitle(),
+                card.getDescription(),
+                card.getOrderIndex(),
+                card.getColumn().getId()
+            );
+            return ResponseEntity.ok(dto);
+        })
+        .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -62,11 +91,20 @@ public class KanbanCardController {
     }
 
     @PutMapping("/{cardId}/move/{newColumnId}")
-    public ResponseEntity<KanbanCard> moveCard(@PathVariable Long cardId, @PathVariable Long newColumnId) {
-        Optional<KanbanCard> movedCard = cardService.moveCard(cardId, newColumnId);
+    public ResponseEntity<CardResponseDTO> moveCard(@PathVariable Long cardId, @PathVariable Long newColumnId) {
+        Optional<KanbanCard> movedCardOptional = cardService.moveCard(cardId, newColumnId);
 
-        return movedCard.map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+        return movedCardOptional.map(card -> {
+             CardResponseDTO dto = new CardResponseDTO(
+                 card.getId(),
+                 card.getTitle(),
+                 card.getDescription(),
+                 card.getOrderIndex(),
+                 card.getColumn().getId()
+             );
+             return ResponseEntity.ok(dto);
+         })
+        .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Data

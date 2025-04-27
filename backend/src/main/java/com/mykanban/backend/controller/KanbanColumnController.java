@@ -2,6 +2,9 @@ package com.mykanban.backend.controller;
 
 import com.mykanban.backend.model.KanbanColumn;
 import com.mykanban.backend.service.KanbanColumnService;
+import com.mykanban.backend.dto.ColumnResponseDTO;
+import com.mykanban.backend.dto.CardResponseDTO;
+// import com.mykanban.backend.model.KanbanCard;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,32 +33,110 @@ public class KanbanColumnController {
     }
 
     @GetMapping
-    public ResponseEntity<List<KanbanColumn>> getAllColumns() {
+    public ResponseEntity<List<ColumnResponseDTO>> getAllColumns() {
         List<KanbanColumn> columns = columnService.getAllColumns();
-        return ResponseEntity.ok(columns);
+
+        List<ColumnResponseDTO> columnDTOs = columns.stream().map(column -> {
+            List<CardResponseDTO> cardDTOs = column.getCards().stream().map(card ->
+                new CardResponseDTO(
+                    card.getId(),
+                    card.getTitle(),
+                    card.getDescription(),
+                    card.getOrderIndex(),
+                    card.getColumn().getId()
+                )
+            ).collect(Collectors.toList());
+
+            return new ColumnResponseDTO(
+                column.getId(),
+                column.getName(),
+                column.getOrderIndex(),
+                cardDTOs
+            );
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(columnDTOs);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<KanbanColumn> getColumnById(@PathVariable Long id) {
-        Optional<KanbanColumn> column = columnService.getColumnById(id);
-        return column.map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ColumnResponseDTO> getColumnById(@PathVariable Long id) {
+        Optional<KanbanColumn> columnOptional = columnService.getColumnById(id);
+    
+        return columnOptional
+            .map(column -> {
+                List<CardResponseDTO> cardDTOs = column.getCards().stream().map(card ->
+                    new CardResponseDTO(
+                        card.getId(),
+                        card.getTitle(),
+                        card.getDescription(),
+                        card.getOrderIndex(),
+                        card.getColumn().getId()
+                    )
+                ).collect(Collectors.toList());
+
+                return new ColumnResponseDTO(
+                    column.getId(),
+                    column.getName(),
+                    column.getOrderIndex(),
+                    cardDTOs
+                );
+            })
+            .map(ResponseEntity::ok) 
+            .orElseGet(() -> ResponseEntity.notFound().build()); 
     }
 
     @PostMapping
-    public ResponseEntity<KanbanColumn> createColumn(@RequestBody ColumnCreateRequest request) {
+    public ResponseEntity<ColumnResponseDTO> createColumn(@RequestBody ColumnCreateRequest request) {
         KanbanColumn newColumn = new KanbanColumn();
         newColumn.setName(request.getName());
         KanbanColumn createdColumn = columnService.createColumn(newColumn);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdColumn);
+
+        List<CardResponseDTO> cardDTOs = createdColumn.getCards().stream().map(card ->
+            new CardResponseDTO(
+                card.getId(),
+                card.getTitle(),
+                card.getDescription(),
+                card.getOrderIndex(),
+                card.getColumn().getId()
+            )
+        ).collect(Collectors.toList());
+
+        ColumnResponseDTO createdColumnDTO = new ColumnResponseDTO(
+            createdColumn.getId(),
+            createdColumn.getName(),
+            createdColumn.getOrderIndex(),
+            cardDTOs
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdColumnDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<KanbanColumn> updateColumn(@PathVariable Long id, @RequestBody KanbanColumn updatedColumnData) {
-        Optional<KanbanColumn> updatedColumn = columnService.updateColumn(id, updatedColumnData);
-        return updatedColumn.map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
-    }
+public ResponseEntity<ColumnResponseDTO> updateColumn(@PathVariable Long id, @RequestBody KanbanColumn updatedColumnData) {
+    Optional<KanbanColumn> updatedColumnOptional = columnService.updateColumn(id, updatedColumnData);
+
+    return updatedColumnOptional
+        .map(column -> {
+             List<CardResponseDTO> cardDTOs = column.getCards().stream().map(card ->
+                 new CardResponseDTO(
+                     card.getId(),
+                     card.getTitle(),
+                     card.getDescription(),
+                     card.getOrderIndex(),
+                     card.getColumn().getId()
+                 )
+             ).collect(Collectors.toList());
+
+             return new ColumnResponseDTO(
+                 column.getId(),
+                 column.getName(),
+                 column.getOrderIndex(),
+                 cardDTOs
+             );
+        })
+        .map(ResponseEntity::ok) 
+        .orElseGet(() -> ResponseEntity.notFound().build()); 
+}
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteColumn(@PathVariable Long id) {
@@ -63,9 +145,29 @@ public class KanbanColumnController {
     }
 
     @PutMapping("/reorder")
-    public ResponseEntity<List<KanbanColumn>> reorderColumns(@RequestBody List<KanbanColumn> reorderedColumns) {
-        List<KanbanColumn> updatedColumns = columnService.reorderColumns(reorderedColumns);
-        return ResponseEntity.ok(updatedColumns);
+    public ResponseEntity<List<ColumnResponseDTO>> reorderColumns(@RequestBody List<KanbanColumn> reorderedColumns) {
+        List<KanbanColumn> updatedColumnEntities = columnService.reorderColumns(reorderedColumns);
+
+        List<ColumnResponseDTO> updatedColumnDTOs = updatedColumnEntities.stream().map(column -> {
+             List<CardResponseDTO> cardDTOs = column.getCards().stream().map(card ->
+                 new CardResponseDTO(
+                     card.getId(),
+                     card.getTitle(),
+                     card.getDescription(),
+                     card.getOrderIndex(),
+                     card.getColumn().getId()
+                 )
+             ).collect(Collectors.toList());
+
+             return new ColumnResponseDTO(
+                 column.getId(),
+                 column.getName(),
+                 column.getOrderIndex(),
+                 cardDTOs
+             );
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(updatedColumnDTOs);
     }
 
     @Data
