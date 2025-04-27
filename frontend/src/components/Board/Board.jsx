@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Column from './Column';
 import './Board.css';
 import CardModal from '../CardModal.jsx';
-import { updateCardAxios, deleteCardAxios, createColumnAxios } from '../../api';
+import { updateCardAxios, deleteCardAxios, createColumnAxios, createCardAxios } from '../../api';
 
 
 const Board = () => {
@@ -107,16 +107,49 @@ const Board = () => {
         if (columnName && columnName.trim()) {
             try {
                 const newColumn = await createColumnAxios(columnName.trim());
-
                 console.log('Column created successfully:', newColumn);
-
                 setColumns(currentColumns => [...currentColumns, newColumn]);
-
             } catch (error) {
                 console.error('Error creating column:', error);
             }
         } else {
             console.log('Column creation cancelled or name was empty.');
+        }
+    };
+
+    const handleAddCard = async (columnId) => {
+        const cardTitle = prompt("Enter card title:");
+        const cardDescription = prompt("Enter card description (optional):");
+
+        if (cardTitle && cardTitle.trim()) {
+            try {
+                const newCardData = {
+                    title: cardTitle.trim(),
+                    description: cardDescription ? cardDescription.trim() : '',
+                    columnId: columnId,
+                };
+
+                const createdCard = await createCardAxios(newCardData);
+
+                console.log('Card created successfully:', createdCard);
+
+                 setColumns(currentColumns => {
+                    return currentColumns.map(column => {
+                         if (column.id === columnId) {
+                              return {
+                                 ...column,
+                                 cards: [...column.cards, createdCard]
+                             };
+                         }
+                         return column;
+                    });
+                 });
+
+            } catch (error) {
+                console.error('Error creating card:', error);
+            }
+        } else {
+             console.log('Card creation cancelled or title was empty.');
         }
     };
 
@@ -138,6 +171,7 @@ const Board = () => {
                         key={column.id}
                         column={column}
                         openModal={openModal}
+                        onAddCard={handleAddCard}
                     />
                 ))}
             </div>

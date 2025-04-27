@@ -2,7 +2,7 @@ import React from 'react';
 import './Column.css';
 import Card from './Card.jsx';
 
-const Column = ({ column, openModal }) => {
+const Column = ({ column, openModal, onAddCard }) => {
 
     const cards = (column && column.cards) ? column.cards : [];
     const columnName = (column && column.name) ? column.name : 'Loading...';
@@ -20,7 +20,7 @@ const Column = ({ column, openModal }) => {
                     />
                 ))}
             </div>
-            <button>+ Add Card</button>
+            <button onClick={() => onAddCard(column.id)} className="add-card-button">+ Add Card</button>
         </div>
     );
 };

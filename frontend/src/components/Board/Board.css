@@ -3,6 +3,7 @@
     background-color: #0079bf;
     height: calc(100vh - 60px); 
     display: flex; 
+    align-items: center;
     flex-direction: column; 
     overflow: hidden; 
 }
