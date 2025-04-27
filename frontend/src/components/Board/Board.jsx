@@ -47,6 +47,9 @@ const Board = () => {
     };
 
     const handleSaveCard = async (updatedCardData) => {
+        // --- NEW LOG: Log the ID being used for save ---
+        console.log('Attempting to save card with ID:', selectedCard?.id);
+        // --- END NEW LOG ---
         if (!selectedCard) {
             console.error("Attempted to save card, but no card is selected.");
             return;
@@ -77,6 +80,9 @@ const Board = () => {
     };
 
     const handleDeleteCard = async () => {
+        // --- NEW LOG: Log the ID being used for delete ---
+        console.log('Attempting to delete card with ID:', selectedCard?.id);
+        // --- END NEW LOG ---
          if (!selectedCard) {
              console.error("Attempted to delete card, but no card is selected.");
              return;
@@ -118,39 +124,55 @@ const Board = () => {
     };
 
     const handleAddCard = async (columnId) => {
+        console.log('handleAddCard triggered for column:', columnId); // <-- LOG 1
+
         const cardTitle = prompt("Enter card title:");
+        console.log('Card title entered:', cardTitle); // <-- LOG 2
+
         const cardDescription = prompt("Enter card description (optional):");
+        console.log('Card description entered:', cardDescription); // <-- LOG 3
+
 
         if (cardTitle && cardTitle.trim()) {
+             console.log('Card title is valid, preparing data...'); // <-- LOG 4
             try {
-                const newCardData = {
-                    title: cardTitle.trim(),
-                    description: cardDescription ? cardDescription.trim() : '',
-                    columnId: columnId,
-                };
+                 const newCardData = {
+                     title: cardTitle.trim(),
+                     description: cardDescription ? cardDescription.trim() : '',
+                     columnId: columnId,
+                 };
+                 console.log('Prepared card data:', newCardData); // <-- LOG 5
 
-                const createdCard = await createCardAxios(newCardData);
+                 console.log('Attempting to create card via API...'); // <-- LOG 6
+                 const createdCard = await createCardAxios(newCardData); // network request is initiated
+                 console.log('API call to create card finished.'); // <-- LOG 7 (appears if the API call succeeds)
 
-                console.log('Card created successfully:', createdCard);
+                 console.log('Card created successfully:', createdCard); // <-- LOG 8 (appears after successful API call)
 
                  setColumns(currentColumns => {
-                    return currentColumns.map(column => {
-                         if (column.id === columnId) {
-                              return {
-                                 ...column,
-                                 cards: [...column.cards, createdCard]
-                             };
-                         }
-                         return column;
-                    });
-                 });
+                     console.log('Updating columns state with new card...'); // <-- LOG 9 (Before state update logic)
+                     // ... state update logic ...
+                      const updatedColumns = currentColumns.map(column => {
+                          if (column.id === columnId) {
+                               return {
+                                  ...column,
+                                  cards: [...(column.cards || []), createdCard]
+                              };
+                          }
+                          return column;
+                      });
+                      console.log('State update finished.'); // <-- LOG 10 (after state update logic, before setColumns returns)
+                      return updatedColumns; // the actual state update happens after this function returns
+                  });
+                console.log('SetColumns triggered.'); // <-- LOG 11 (after setColumns is called)
 
             } catch (error) {
-                console.error('Error creating card:', error);
+                console.error('Error caught during card creation:', error); // <-- LOG (if an error is caught)
             }
         } else {
-             console.log('Card creation cancelled or title was empty.');
+             console.log('Card creation cancelled or title was empty.'); // <-- LOG (if title was empty)
         }
+        console.log('handleAddCard function finished.'); // <-- LOG 12 (at the very end)
     };
 
 

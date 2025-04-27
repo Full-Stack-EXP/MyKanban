@@ -1,32 +1,29 @@
 package com.mykanban.backend.model;
 
 import jakarta.persistence.*;
-import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-
-@Entity 
-@Table(name = "columns") 
+@Entity
+@Table(name = "columns")
 public class KanbanColumn {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; 
+    private long id;
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "order_index") 
+    @Column(name = "order_index")
     private Integer orderIndex;
 
-    @OneToMany(mappedBy = "column", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    
-    @JsonIgnore 
+    @OneToMany(mappedBy = "column", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<KanbanCard> cards;
+
 }

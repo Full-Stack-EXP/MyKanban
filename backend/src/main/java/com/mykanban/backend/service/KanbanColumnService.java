@@ -1,80 +1,79 @@
 package com.mykanban.backend.service;
 
-import com.mykanban.backend.model.KanbanColumn; 
-import com.mykanban.backend.model.KanbanCard;
+import com.mykanban.backend.model.KanbanColumn;
 import com.mykanban.backend.repository.KanbanColumnRepository;
-import com.mykanban.backend.repository.KanbanCardRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-@Service 
+
+@Service
 public class KanbanColumnService {
 
     private final KanbanColumnRepository columnRepository;
-    private final KanbanCardRepository cardRepository;
 
-    @Autowired 
-    public KanbanColumnService(KanbanColumnRepository columnRepository, KanbanCardRepository cardRepository) {
+    @Autowired
+    public KanbanColumnService(KanbanColumnRepository columnRepository) {
         this.columnRepository = columnRepository;
-        this.cardRepository = cardRepository;
     }
 
-    /**
-    * @param column 
-    * @return 
-    */
+    public List<KanbanColumn> getAllColumns() {
+        return columnRepository.findAll();
+    }
+
     public KanbanColumn createColumn(KanbanColumn column) {
+        List<KanbanColumn> existingColumns = columnRepository.findAll();
+        column.setOrderIndex(existingColumns.size());
         return columnRepository.save(column);
     }
 
-    /**
-    * @param id
-    * @return
-    */
     public Optional<KanbanColumn> getColumnById(Long id) {
         return columnRepository.findById(id);
     }
 
-    /**
-    * @return
-    */
-    public List<KanbanColumn> getAllColumns() {
-        return columnRepository.findAllByOrderByOrderIndexAsc();
-    }
-
-    /**
-    * @param id 
-    * @param updatedColumnData 
-    * @return
-    */
-    public Optional<KanbanColumn> updateColumn(Long id, KanbanColumn updatedColumnData) {
-        return columnRepository.findById(id).map(column -> {
-
-            column.setName(updatedColumnData.getName());
-            column.setOrderIndex(updatedColumnData.getOrderIndex()); 
-
-            return columnRepository.save(column); 
-        });
-    }
-
-    /**
-    * @param id
-    */
     public void deleteColumn(Long id) {
-        columnRepository.deleteById(id); 
+        columnRepository.deleteById(id);
     }
 
-    /**
-    * @param columnId 
-    * @return
-    */
-    public List<KanbanCard> getCardsForColumn(Long columnId) {
-        KanbanColumn column = columnRepository.findById(columnId)
-            .orElseThrow(() -> new RuntimeException("Column not found with ID: " + columnId));
+    public Optional<KanbanColumn> updateColumn(Long id, KanbanColumn updatedColumnData) {
+         return columnRepository.findById(id).map(column -> {
+             column.setName(updatedColumnData.getName());
+             if (updatedColumnData.getOrderIndex() != null) {
+                 column.setOrderIndex(updatedColumnData.getOrderIndex());
+             }
+             return columnRepository.save(column);
+         });
+    }
 
-        return cardRepository.findByColumn(column);
+    @Transactional
+    public List<KanbanColumn> reorderColumns(List<KanbanColumn> reorderedColumns) {
+        List<KanbanColumn> existingColumns = columnRepository.findAllById(
+            reorderedColumns.stream()
+                .map(KanbanColumn::getId)
+                .toList()
+        );
+
+         Map<Long, KanbanColumn> existingColumnMap = existingColumns.stream()
+             .collect(Collectors.toMap(KanbanColumn::getId, column -> column));
+
+
+        List<KanbanColumn> updatedColumns = new ArrayList<>();
+
+        for (KanbanColumn reorderedColumnData : reorderedColumns) {
+            KanbanColumn existingColumn = existingColumnMap.get(reorderedColumnData.getId());
+            if (existingColumn != null) {
+                existingColumn.setOrderIndex(reorderedColumnData.getOrderIndex());
+                updatedColumns.add(existingColumn);
+            } else {
+                 System.err.println("Warning: Column with ID " + reorderedColumnData.getId() + " not found for reordering.");
+            }
+        }
+
+        return columnRepository.saveAll(updatedColumns);
     }
 }

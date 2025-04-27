@@ -1,23 +1,23 @@
 package com.mykanban.backend.controller;
 
-import com.mykanban.backend.model.KanbanCard; 
+import com.mykanban.backend.model.KanbanCard;
 import com.mykanban.backend.service.KanbanCardService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus; 
-import org.springframework.http.ResponseEntity; 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional; 
+import java.util.Optional;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 
-@RestController 
+@RestController
 @RequestMapping("/api/cards")
-@CrossOrigin(origins = "http://localhost:3000") 
+@CrossOrigin(origins = "http://localhost:3000")
 public class KanbanCardController {
 
     private final KanbanCardService cardService;
@@ -29,8 +29,8 @@ public class KanbanCardController {
 
     @GetMapping("/{id}")
     public ResponseEntity<KanbanCard> getCardById(@PathVariable Long id) {
-        Optional<KanbanCard> card = cardService.getCardById(id); 
-        return card.map(ResponseEntity::ok) 
+        Optional<KanbanCard> card = cardService.getCardById(id);
+        return card.map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -51,7 +51,7 @@ public class KanbanCardController {
     public ResponseEntity<KanbanCard> updateCard(@PathVariable Long id, @RequestBody KanbanCard updatedCardData) {
         Optional<KanbanCard> updatedCard = cardService.updateCard(id, updatedCardData);
 
-        return updatedCard.map(ResponseEntity::ok) 
+        return updatedCard.map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

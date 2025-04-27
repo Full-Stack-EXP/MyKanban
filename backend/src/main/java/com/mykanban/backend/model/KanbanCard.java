@@ -7,8 +7,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Data
 @NoArgsConstructor
-
-@Entity 
+@Entity
 @Table(name = "cards")
 public class KanbanCard {
 
@@ -24,10 +23,10 @@ public class KanbanCard {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "column_id", nullable = false)
-
     @JsonBackReference
     private KanbanColumn column;
 
     @Column(name = "order_index")
     private Integer orderIndex;
+
 }
