@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Column from './Column';
 import './Board.css';
-import CardModal from '../CardModal.jsx';
+import CardModal from './CardModal.jsx';
 import { updateCardAxios, deleteCardAxios, createColumnAxios, createCardAxios } from '../../api';
 
 
@@ -23,6 +23,7 @@ const Board = () => {
                 }
 
                 const data = await response.json();
+                // Ensure the initial data set also triggers a render
                 setColumns(data);
 
             } catch (error) {
@@ -47,9 +48,7 @@ const Board = () => {
     };
 
     const handleSaveCard = async (updatedCardData) => {
-        // --- NEW LOG: Log the ID being used for save ---
         console.log('Attempting to save card with ID:', selectedCard?.id);
-        // --- END NEW LOG ---
         if (!selectedCard) {
             console.error("Attempted to save card, but no card is selected.");
             return;
@@ -57,11 +56,16 @@ const Board = () => {
         try {
             const savedCard = await updateCardAxios(selectedCard.id, updatedCardData);
             console.log('Card saved successfully:', savedCard);
+
             setColumns(currentColumns => {
+                // Create a new array of columns
                 return currentColumns.map(column => {
+                    // If this is the column containing the saved card
                     if (column.id === savedCard.columnId) {
+                        // Create a new column object
                         return {
                             ...column,
+                            // Create a new cards array with the updated card
                             cards: column.cards.map(card => {
                                 if (card.id === savedCard.id) {
                                     return savedCard;
@@ -70,6 +74,7 @@ const Board = () => {
                             })
                         };
                     }
+                    // Return other columns unchanged
                     return column;
                 });
             });
@@ -80,9 +85,7 @@ const Board = () => {
     };
 
     const handleDeleteCard = async () => {
-        // --- NEW LOG: Log the ID being used for delete ---
         console.log('Attempting to delete card with ID:', selectedCard?.id);
-        // --- END NEW LOG ---
          if (!selectedCard) {
              console.error("Attempted to delete card, but no card is selected.");
              return;
@@ -90,14 +93,20 @@ const Board = () => {
          try {
              await deleteCardAxios(selectedCard.id);
              console.log('Card deleted successfully:', selectedCard.id);
+
              setColumns(currentColumns => {
+                 // Create a new array of columns
                  return currentColumns.map(column => {
+                     // If this is the column from which the card was deleted
                      if (column.id === selectedCard.columnId) {
+                         // Create a new column object
                          return {
                              ...column,
+                             // Create a new cards array without the deleted card
                              cards: column.cards.filter(card => card.id !== selectedCard.id)
                          };
                      }
+                     // Return other columns unchanged
                      return column;
                  });
              });
@@ -114,6 +123,7 @@ const Board = () => {
             try {
                 const newColumn = await createColumnAxios(columnName.trim());
                 console.log('Column created successfully:', newColumn);
+                // Correctly update state by creating a new array
                 setColumns(currentColumns => [...currentColumns, newColumn]);
             } catch (error) {
                 console.error('Error creating column:', error);
@@ -124,55 +134,56 @@ const Board = () => {
     };
 
     const handleAddCard = async (columnId) => {
-        console.log('handleAddCard triggered for column:', columnId); // <-- LOG 1
-
+        console.log('handleAddCard triggered for column:', columnId);
         const cardTitle = prompt("Enter card title:");
-        console.log('Card title entered:', cardTitle); // <-- LOG 2
-
+        console.log('Card title entered:', cardTitle);
         const cardDescription = prompt("Enter card description (optional):");
-        console.log('Card description entered:', cardDescription); // <-- LOG 3
-
+        console.log('Card description entered:', cardDescription);
 
         if (cardTitle && cardTitle.trim()) {
-             console.log('Card title is valid, preparing data...'); // <-- LOG 4
+             console.log('Card title is valid, preparing data...');
             try {
                  const newCardData = {
                      title: cardTitle.trim(),
                      description: cardDescription ? cardDescription.trim() : '',
                      columnId: columnId,
                  };
-                 console.log('Prepared card data:', newCardData); // <-- LOG 5
+                 console.log('Prepared card data:', newCardData);
 
-                 console.log('Attempting to create card via API...'); // <-- LOG 6
-                 const createdCard = await createCardAxios(newCardData); // network request is initiated
-                 console.log('API call to create card finished.'); // <-- LOG 7 (appears if the API call succeeds)
+                 console.log('Attempting to create card via API...');
+                 const createdCard = await createCardAxios(newCardData);
+                 console.log('API call to create card finished.');
 
-                 console.log('Card created successfully:', createdCard); // <-- LOG 8 (appears after successful API call)
+                 console.log('Card created successfully:', createdCard);
 
                  setColumns(currentColumns => {
-                     console.log('Updating columns state with new card...'); // <-- LOG 9 (Before state update logic)
-                     // ... state update logic ...
+                     console.log('Updating columns state with new card...');
+                      // Create a new array of columns
                       const updatedColumns = currentColumns.map(column => {
+                          // If this is the column where the new card was added
                           if (column.id === columnId) {
+                               // Create a new column object
                                return {
                                   ...column,
+                                  // Create a new cards array with the new card added
                                   cards: [...(column.cards || []), createdCard]
                               };
                           }
+                          // Return other columns unchanged
                           return column;
                       });
-                      console.log('State update finished.'); // <-- LOG 10 (after state update logic, before setColumns returns)
-                      return updatedColumns; // the actual state update happens after this function returns
+                      console.log('State update finished.');
+                      return updatedColumns;
                   });
-                console.log('SetColumns triggered.'); // <-- LOG 11 (after setColumns is called)
+                console.log('SetColumns triggered.');
 
             } catch (error) {
-                console.error('Error caught during card creation:', error); // <-- LOG (if an error is caught)
+                console.error('Error caught during card creation:', error);
             }
         } else {
-             console.log('Card creation cancelled or title was empty.'); // <-- LOG (if title was empty)
+             console.log('Card creation cancelled or title was empty.');
         }
-        console.log('handleAddCard function finished.'); // <-- LOG 12 (at the very end)
+        console.log('handleAddCard function finished.');
     };
 
 
@@ -190,7 +201,7 @@ const Board = () => {
             <div className="columns-container">
                 {columns.map(column => (
                     <Column
-                        key={column.id}
+                        key={column.id} // Ensure column.id is unique and stable
                         column={column}
                         openModal={openModal}
                         onAddCard={handleAddCard}

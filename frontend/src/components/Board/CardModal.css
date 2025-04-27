@@ -1,0 +1,117 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; 
+  }
+  
+  .modal-content {
+    background-color: var(--color-secondary-bg);
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+  }
+  
+  .modal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: var(--color-text-dark);
+  }
+  
+  .modal-content h3 {
+      color: var(--color-text-dark); 
+      margin-top: 0;
+      margin-bottom: 5px;
+      word-break: break-word;
+  }
+  
+  .modal-content p {
+      color: var(--color-text-medium);
+      margin-bottom: 15px;
+      word-break: break-word;
+  }
+  
+  .modal-content div { 
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+  }
+  
+  .modal-content label {
+      font-weight: bold;
+      color: var(--color-text-dark);
+      font-size: 0.9em;
+  }
+  
+  .modal-content input[type="text"],
+  .modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 4px;
+    font-size: 1em;
+    color: var(--color-primary-text); 
+    background-color: #FFFFFF; 
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box; 
+  }
+  
+  .modal-content input[type="text"]:focus,
+  .modal-content textarea:focus {
+    border-color: var(--color-muted-green); 
+    box-shadow: 0 0 0 0.2rem rgba(153, 188, 133, 0.25); 
+    outline: none; 
+  }
+  
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .modal-actions button {
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+  }
+  
+  .modal-actions button:first-child { 
+    background-color: var(--color-accent); 
+    color: white;
+    border: none;
+  }
+  
+  .modal-actions button:first-child:hover {
+     /* background-color: darken(var(--color-accent), 10%); */
+     background-color: #88AB7B;
+  }
+  
+  .modal-actions button:last-child { 
+    background-color: #e74c3c; 
+    color: white;
+    border: none;
+  }
+  
+  .modal-actions button:last-child:hover {
+    background-color: #c0392b;
+  }

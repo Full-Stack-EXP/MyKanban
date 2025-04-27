@@ -3,6 +3,8 @@ package com.mykanban.backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -24,6 +26,5 @@ public class KanbanColumn {
 
     @OneToMany(mappedBy = "column", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<KanbanCard> cards;
-
+    private List<KanbanCard> cards = new ArrayList<>();
 }

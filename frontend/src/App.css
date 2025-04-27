@@ -1,10 +1,30 @@
-body {
+:root {
+  --color-very-light-beige: #FAF1E6;
+  --color-extremely-light-beige: #FDFAF6;
+  --color-very-light-greenish-gray: #c1cfc5;
+  --color-light-greenish-gray: #a2c4ac;
+  --color-muted-green: #76a35c;
+  --color-dark-muted-green: #547541;
+
+  /* Role Assignments */
+  --color-primary-bg: var(--color-extremely-light-beige); 
+  --color-secondary-bg: var(--color-very-light-beige); 
+  --color-accent: var(--color-muted-green); 
+  --color-border-subtle: var(--color-very-light-greenish-gray); 
+  --color-text-dark: var(--color-muted-green); 
+  --color-text-medium: #555; 
+}
+
+html, body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-rendering: grayscale;
+  background-color: var(--color-primary-bg);
+  color: var(--color-text-medium); 
+  overflow: hidden;
 }
 
 code {
@@ -14,4 +34,20 @@ code {
 
 .App {
   text-align: left;
+}
+
+button:focus,
+button:active {
+  outline: none;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+}
+
+.App-header {
+  display: none;
 }
