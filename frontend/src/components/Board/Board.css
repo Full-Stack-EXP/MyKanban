@@ -1,78 +1,96 @@
 .board-container {
-    padding: 10px;
-    background-color: var(--color-primary-bg);
-    height: calc(100vh - 60px);
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    overflow: hidden;
+  padding: 10px;
+  background-color: var(--color-primary-bg);
+  height: calc(100vh - 60px); /* Keep your height calculation for larger screens */
+  display: flex;
+  align-items: flex-start; /* Align items to the start (left) */
+  flex-direction: column;
+  overflow-y: hidden; /* Hide vertical overflow for the board container */
+  overflow-x: visible; /* Allow horizontal overflow to be handled by children */
 }
 
 .board-container h2 {
-    color: var(--color-text-dark); 
-    margin-top: 0;
-    margin-bottom: 10px;
-    padding-left: 8px;
+  color: var(--color-text-dark);
+  margin-top: 0;
+  margin-bottom: 10px;
+  padding-left: 8px;
+  flex-shrink: 0;
 }
 
 .columns-container {
-    display: flex;
-    flex-grow: 1;
-    overflow-x: auto;
+  display: flex;
+  flex-grow: 1;
+  overflow-x: auto; /* This should now create the horizontal scrollbar */
+  height: 0; /* Helps flex-grow calculate remaining space */
+  width: 100%; /* Explicitly set width to 100% to take full parent width */
 
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-muted-green) var(--color-very-light-greenish-gray); 
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-muted-green) var(--color-very-light-greenish-gray);
 }
 
 .columns-container::-webkit-scrollbar {
-    height: 12px;
+  height: 12px;
 }
 
 .columns-container::-webkit-scrollbar-thumb {
-    background-color: var(--color-muted-green);
-    border-radius: 6px;
-    border: 3px solid var(--color-very-light-beige);
+  background-color: var(--color-muted-green);
+  border-radius: 6px;
+  border: 3px solid var(--color-very-light-beige);
 }
 
 .columns-container::-webkit-scrollbar-track {
-    background: var(--color-very-light-greenish-gray);
+  background: var(--color-very-light-greenish-gray);
 }
 
 .add-column-button {
-  background-color: var(--color-accent); 
-  color: white; 
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1em;
-  margin-top: 20px;
-  transition: background-color 0.3s ease;
+background-color: var(--color-accent);
+color: white;
+border: none;
+padding: 10px 15px;
+border-radius: 5px;
+cursor: pointer;
+font-size: 1em;
+margin-top: 20px;
+flex-shrink: 0;
+transition: background-color 0.3s ease;
 }
 
 .add-column-button:hover {
-  background-color: var(--color-dark-muted-green);
-    border-color: var(--color-muted-green); 
+background-color: var(--color-dark-muted-green);
+  border-color: var(--color-muted-green);
 }
 
 .add-column-button:focus {
-    outline: none;
+  outline: none;
 }
 
-@media (max-width: 768px) { 
-    .board-container {
-      padding: 10px;
-      height: auto; 
-      overflow-y: auto; 
-      overflow-x: hidden; 
-    }
-  
-    .columns-container {
-      flex-direction: column;
-      align-items: center;
-      overflow-x: hidden; 
-      overflow-y: visible;
-      padding-bottom: 0;
-      gap: 15px;
-    }
-  }
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+.board-container {
+  padding: 10px;
+  height: auto;
+  overflow-y: auto; /* Allow vertical scrolling when stacked */
+  overflow-x: hidden; /* Hide horizontal overflow when stacked */
+  align-items: center; /* Center items again when stacked */
+}
+
+ .board-container h2 {
+  flex-shrink: unset;
+}
+
+.columns-container {
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding-bottom: 0;
+  gap: 15px;
+  height: auto;
+  width: auto; /* Allow width to be determined by stacked columns */
+}
+
+ .add-column-button {
+  flex-shrink: unset;
+  margin-bottom: 15px;
+}
+}

@@ -38,6 +38,16 @@ export const deleteCardAxios = async (cardId) => {
     await axiosInstance.delete(`/cards/${cardId}`);
 };
 
+export const deleteColumnAxios = async (columnId) => {
+    try {
+        await axiosInstance.delete(`/columns/${columnId}`);
+        console.log(`Column ${columnId} deleted successfully via API.`);
+    } catch (error) {
+        console.error(`Error deleting column ${columnId} via API:`, error);
+        throw error;
+    }
+};
+
 export const moveCardAxios = async (cardId, newColumnId) => {
     const response = await axiosInstance.put(`/cards/${cardId}/move/${newColumnId}`);
     return response.data;

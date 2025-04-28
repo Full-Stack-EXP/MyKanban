@@ -2,8 +2,21 @@ import React, { useState, useEffect } from 'react';
 import Column from './Column';
 import './Board.css';
 import CardModal from './CardModal.jsx';
-import { updateCardAxios, deleteCardAxios, createColumnAxios, createCardAxios } from '../../api';
+import { updateCardAxios, deleteCardAxios, createColumnAxios, createCardAxios, deleteColumnAxios } from '../../api';
 
+import {
+    DndContext,
+    closestCorners,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay 
+} from '@dnd-kit/core';
+import {
+    arrayMove, 
+    sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
 
 const Board = () => {
     const [columns, setColumns] = useState([]);
@@ -12,6 +25,9 @@ const Board = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
+
+    const [activeId, setActiveId] = useState(null);
+
 
     useEffect(() => {
         const fetchColumns = async () => {
@@ -23,7 +39,6 @@ const Board = () => {
                 }
 
                 const data = await response.json();
-                // Ensure the initial data set also triggers a render
                 setColumns(data);
 
             } catch (error) {
@@ -36,6 +51,18 @@ const Board = () => {
         fetchColumns();
 
     }, []);
+
+    // Define sensors for drag interactions
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5, // Start drag after 5px displacement
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const openModal = (cardData) => {
         setSelectedCard(cardData);
@@ -58,14 +85,10 @@ const Board = () => {
             console.log('Card saved successfully:', savedCard);
 
             setColumns(currentColumns => {
-                // Create a new array of columns
                 return currentColumns.map(column => {
-                    // If this is the column containing the saved card
                     if (column.id === savedCard.columnId) {
-                        // Create a new column object
                         return {
                             ...column,
-                            // Create a new cards array with the updated card
                             cards: column.cards.map(card => {
                                 if (card.id === savedCard.id) {
                                     return savedCard;
@@ -74,13 +97,28 @@ const Board = () => {
                             })
                         };
                     }
-                    // Return other columns unchanged
                     return column;
                 });
             });
             closeModal();
         } catch (error) {
             console.error('Error saving card:', error);
+        }
+    };
+
+    const handleDeleteColumn = async (columnId) => {
+        console.log('Attempting to delete column with ID:', columnId);
+        const isConfirmed = window.confirm("Are you sure you want to delete this column and all its cards?");
+        if (!isConfirmed) {
+            console.log('Column deletion cancelled by user.');
+            return;
+        }
+        try {
+            await deleteColumnAxios(columnId);
+            console.log('Column deleted successfully:', columnId);
+            setColumns(currentColumns => currentColumns.filter(column => column.id !== columnId));
+        } catch (error) {
+            console.error('Error deleting column:', error);
         }
     };
 
@@ -95,18 +133,13 @@ const Board = () => {
              console.log('Card deleted successfully:', selectedCard.id);
 
              setColumns(currentColumns => {
-                 // Create a new array of columns
                  return currentColumns.map(column => {
-                     // If this is the column from which the card was deleted
                      if (column.id === selectedCard.columnId) {
-                         // Create a new column object
                          return {
                              ...column,
-                             // Create a new cards array without the deleted card
                              cards: column.cards.filter(card => card.id !== selectedCard.id)
                          };
                      }
-                     // Return other columns unchanged
                      return column;
                  });
              });
@@ -123,7 +156,6 @@ const Board = () => {
             try {
                 const newColumn = await createColumnAxios(columnName.trim());
                 console.log('Column created successfully:', newColumn);
-                // Correctly update state by creating a new array
                 setColumns(currentColumns => [...currentColumns, newColumn]);
             } catch (error) {
                 console.error('Error creating column:', error);
@@ -158,18 +190,13 @@ const Board = () => {
 
                  setColumns(currentColumns => {
                      console.log('Updating columns state with new card...');
-                      // Create a new array of columns
                       const updatedColumns = currentColumns.map(column => {
-                          // If this is the column where the new card was added
                           if (column.id === columnId) {
-                               // Create a new column object
                                return {
                                   ...column,
-                                  // Create a new cards array with the new card added
                                   cards: [...(column.cards || []), createdCard]
                               };
                           }
-                          // Return other columns unchanged
                           return column;
                       });
                       console.log('State update finished.');
@@ -186,6 +213,87 @@ const Board = () => {
         console.log('handleAddCard function finished.');
     };
 
+    const handleDragStart = (event) => {
+        setActiveId(event.active.id);
+    };
+
+    const handleDragEnd = async (event) => {
+        const { active, over } = event;
+
+        setActiveId(null);
+
+        if (!over) {
+            return;
+        }
+
+        const activeId = active.id;
+        const overId = over.id;
+
+        const startColumnId = columns.find(column => column.cards.some(card => card.id === activeId))?.id;
+        const endColumnId = columns.find(column => column.id === overId || column.cards.some(card => card.id === overId))?.id;
+
+        if (!startColumnId || !endColumnId) {
+            return;
+        }
+
+        const startColumn = columns.find(column => column.id === startColumnId);
+        const endColumn = columns.find(column => column.id === endColumnId);
+
+        if (!startColumn || !endColumn) {
+             return;
+        }
+
+        const startCardIndex = startColumn.cards.findIndex(card => card.id === activeId);
+        const endCardIndex = overId === endColumnId
+            ? endColumn.cards.length
+            : endColumn.cards.findIndex(card => card.id === overId);
+
+        if (startColumnId === endColumnId) {
+             const newCards = arrayMove(startColumn.cards, startCardIndex, endCardIndex);
+
+             setColumns(currentColumns =>
+                 currentColumns.map(column =>
+                     column.id === startColumnId ? { ...column, cards: newCards } : column
+                 )
+             );
+        } else { 
+
+            setColumns(currentColumns => {
+                const newColumns = currentColumns.map(column => {
+                    if (column.id === startColumnId) {
+                        return {
+                            ...column,
+                            cards: column.cards.filter(card => card.id !== activeId)
+                        };
+                    } else if (column.id === endColumnId) {
+                        const cardToMove = startColumn.cards[startCardIndex];
+                        const updatedCards = [...column.cards];
+                        updatedCards.splice(endCardIndex, 0, {
+                             ...cardToMove,
+                             columnId: endColumnId 
+                        });
+                        return {
+                            ...column,
+                            cards: updatedCards
+                        };
+                    }
+                    return column;
+                });
+                 return newColumns;
+            });
+
+
+             const cardToMove = startColumn.cards[startCardIndex];
+             try {
+                  console.log(`Card ${activeId} moved to column ${endColumnId} at index ${endCardIndex}`);
+             } catch (apiError) {
+                  console.error('Error updating card position via API:', apiError);
+             }
+        }
+    };
+
+    const activeCard = activeId ? columns.flatMap(column => column.cards).find(card => card.id === activeId) : null;
+
 
     if (isLoading) {
         return <div>Loading board...</div>;
@@ -198,27 +306,40 @@ const Board = () => {
     return (
         <div className="board-container">
             <h2>Kanban Board</h2>
-            <div className="columns-container">
-                {columns.map(column => (
-                    <Column
-                        key={column.id} // Ensure column.id is unique and stable
-                        column={column}
-                        openModal={openModal}
-                        onAddCard={handleAddCard}
-                    />
-                ))}
-            </div>
+            <DndContext
+                sensors={sensors} 
+                collisionDetection={closestCorners} 
+                onDragStart={handleDragStart} 
+                onDragEnd={handleDragEnd} 
+            >
+                <div className="columns-container">
+                    {columns.map(column => (
+                        <Column
+                            key={column.id}
+                            column={column}
+                            openModal={openModal}
+                            onAddCard={handleAddCard}
+                            onDeleteColumn={handleDeleteColumn}
+                        />
+                    ))}
+                </div>
 
-            <button onClick={handleAddColumn} className="add-column-button">+ Add New Column</button>
+                <button onClick={handleAddColumn} className="add-column-button">+ Add New Column</button>
 
-            <CardModal
-                isOpen={isModalOpen}
-                card={selectedCard}
-                onClose={closeModal}
-                onSave={handleSaveCard}
-                onDelete={handleDeleteCard}
-            />
+                <CardModal
+                    isOpen={isModalOpen}
+                    card={selectedCard}
+                    onClose={closeModal}
+                    onSave={handleSaveCard}
+                    onDelete={handleDeleteCard}
+                />
 
+                <DragOverlay>
+                    {activeId && activeCard ? (
+                        <Card card={activeCard} openModal={() => {}} />
+                    ) : null}
+                </DragOverlay>
+            </DndContext>
         </div>
     );
 };

@@ -1,24 +1,36 @@
 import React from 'react';
 import './Column.css';
 import Card from './Card.jsx';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
-const Column = ({ column, openModal, onAddCard }) => {
+const Column = ({ column, openModal, onAddCard, onDeleteColumn }) => {
 
     const cards = (column && column.cards) ? column.cards : [];
     const columnName = (column && column.name) ? column.name : 'Loading...';
 
+        const { setNodeRef } = useDroppable({
+            id: column.id,
+        });
+
     return (
         <div className="column">
-            <h3>{columnName}</h3>
+            <div className="column-header">
+                <h3>{columnName}</h3>
+                <button onClick={onDeleteColumn} className="delete-column-button">&times;</button>
+            </div>
 
-            <div className="card-list">
-                {cards.map(card => (
-                    <Card
-                        key={card.id}
-                        card={card}
-                        openModal={openModal}
-                    />
-                ))}
+            <div ref={setNodeRef} className="card-list">
+                <SortableContext items={cards.map(card => card.id)} strategy={verticalListSortingStrategy}>
+                    {cards.map(card => (
+                        <Card
+                            key={card.id}
+                            card={card}
+                            openModal={openModal}
+                            onDeleteColumn={onDeleteColumn}
+                        />
+                    ))}
+                </SortableContext>
             </div>
             <button onClick={() => onAddCard(column.id)} className="add-card-button">+ Add Card</button>
         </div>
