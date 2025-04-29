@@ -17,7 +17,7 @@ const Column = ({ column, openModal, onAddCard, onDeleteColumn }) => {
         <div className="column">
             <div className="column-header">
                 <h3>{columnName}</h3>
-                <button onClick={onDeleteColumn} className="delete-column-button">&times;</button>
+                <button onClick={() => onDeleteColumn(column.id)} className="delete-column-button">&times;</button>
             </div>
 
             <div ref={setNodeRef} className="card-list">

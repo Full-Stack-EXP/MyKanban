@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Column from './Column';
+import Card from './Card.jsx';
 import './Board.css';
 import CardModal from './CardModal.jsx';
 import { updateCardAxios, deleteCardAxios, createColumnAxios, createCardAxios, deleteColumnAxios } from '../../api';
