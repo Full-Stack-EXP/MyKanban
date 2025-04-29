@@ -1,5 +1,7 @@
 # MyKanban
 
+![Kanban board](https://github.com/user-attachments/assets/c8e90425-c101-43a9-8960-c1ac2a2a5e6e)
+
 ## Project Description
 
 MyKanban is a web-based Kanban board application designed to help users organize their personal tasks / manage small projects efficiently / visualize development workflow. It offers a flexible and intuitive interface where tasks can be easily created, updated, and moved across customizable columns representing different stages of progress.
