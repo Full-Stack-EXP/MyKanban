@@ -93,7 +93,7 @@ cd frontend
 ```
 Start the React development server:
 ```bash
-npm start
+npm run dev
 ```
 
 - The front-end application should open in your web browser http://localhost:5173
